@@ -42,8 +42,10 @@ public class ServerTCP : MonoBehaviour
         //Create and bind the socket
         //Any IP that wants to connect to the port 9050 with TCP, will communicate with this socket
         //Don't forget to set the socket in listening mode
-        socket = new Socket();
- 
+        IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 9050);
+        socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        socket.Bind(localEndPoint);
+        socket.Listen(10);
 
         //TO DO 3
         //TIme to check for connections, start a thread using CheckNewConnections
@@ -68,10 +70,10 @@ public class ServerTCP : MonoBehaviour
             //the socket's RemoteEndpoint and LocalEndPoint
             //try printing them on the console
 
-            newUser.socket = ;//accept the socket
+            newUser.socket = socket.Accept();//accept the socket
 
-            //IPEndPoint clientep = (IPEndPoint)socket.RemoteEndPoint;
-            //serverText = serverText + "\n"+ "Connected with " + clientep.Address.ToString() + " at port " + clientep.Port.ToString();
+            IPEndPoint clientep = (IPEndPoint)newUser.socket.RemoteEndPoint;
+            serverText = serverText + "\n"+ "Connected with " + clientep.Address.ToString() + " at port " + clientep.Port.ToString();
 
             //TO DO 5
             //For every client, we call a new thread to receive their messages. 
@@ -94,13 +96,14 @@ public class ServerTCP : MonoBehaviour
 
         while (true)
         {
-            data = new byte[1024];
-            
+            //data = new byte[1024];
+            recv = user.socket.Receive(data);
+
             if (recv == 0)
                 break;
             else
             {
-                //serverText = serverText + "\n" + Encoding.ASCII.GetString(data, 0, recv);
+                serverText = serverText + "\n" + Encoding.ASCII.GetString(data, 0, recv);
             }
 
             //TO DO 6
@@ -116,6 +119,7 @@ public class ServerTCP : MonoBehaviour
     //Just call the socket's send function and encode the string.
     void Send(User user)
     {
-
+        byte[] data = Encoding.ASCII.GetBytes("PING");
+        user.socket.Send(data);
     }
 }

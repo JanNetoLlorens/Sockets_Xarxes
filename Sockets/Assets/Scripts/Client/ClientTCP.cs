@@ -4,7 +4,6 @@ using System.Text;
 using UnityEngine;
 using System.Threading;
 using TMPro;
-using UnityEngine.tvOS;
 
 public class ClientTCP : MonoBehaviour
 {
@@ -41,8 +40,9 @@ public class ClientTCP : MonoBehaviour
         //When calling connect and succeeding, our server socket will create a
         //connection between this endpoint and the server's endpoint
 
-        IPEndPoint ipep = new IPEndPoint();
-        server = new Socket();
+        IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.55"), 9050);
+        server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        server.Connect(ipep);
 
         //TO DO 4
         //With an established connection, we want to send a message so the server aacknowledges us
@@ -61,7 +61,8 @@ public class ClientTCP : MonoBehaviour
         //TO DO 4
         //Using the socket that stores the connection between the 2 endpoints, call the TCP send function with
         //an encoded message
-
+        byte[] data = Encoding.ASCII.GetBytes("Pentakill enemiga --> DEFEAT");
+        server.Send(data);
     }
 
     //TO DO 7
@@ -70,8 +71,9 @@ public class ClientTCP : MonoBehaviour
     {
         byte[] data = new byte[1024];
         int recv = 0;
+        recv = server.Receive(data);
 
-        //clientText = clientText += "\n" + Encoding.ASCII.GetString(data, 0, recv);
+        clientText = clientText += "\n" + Encoding.ASCII.GetString(data, 0, recv);
     }
 
 }
