@@ -36,7 +36,7 @@ public class ClientUDP : MonoBehaviour
         //we are going to send a message to establish our communication so we need an endpoint
         //We need the server's IP and the port we've binded it to before
         //Again, initialize the socket
-        IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.55"), 9050);
+        IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
 
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 

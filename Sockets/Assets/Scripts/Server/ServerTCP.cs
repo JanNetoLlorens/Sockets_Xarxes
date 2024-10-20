@@ -10,8 +10,12 @@ public class ServerTCP : MonoBehaviour
     Socket socket;
     Thread mainThread = null;
 
+
+    string serverName = "Demacia";
     public GameObject UItextObj;
     TextMeshProUGUI UItext;
+    public TextMeshProUGUI UItextChat;
+    public TextMeshPro UItextChatInput;
     string serverText;
 
     public struct User
@@ -23,6 +27,7 @@ public class ServerTCP : MonoBehaviour
     void Start()
     {
         UItext = UItextObj.GetComponent<TextMeshProUGUI>();
+        UItextChat = UItextObj.GetComponent <TextMeshProUGUI>();
 
     }
 
@@ -33,10 +38,15 @@ public class ServerTCP : MonoBehaviour
 
     }
 
+    public void startWaitingRoom()
+    {
+        serverText = "Host joined waiting room...";
+    }
 
     public void startServer()
     {
-        serverText = "Starting TCP Server...";
+
+        serverText = $"Starting TCP Server {serverName}...";
 
         //TO DO 1
         //Create and bind the socket
@@ -73,6 +83,8 @@ public class ServerTCP : MonoBehaviour
             newUser.socket = socket.Accept();//accept the socket
 
             IPEndPoint clientep = (IPEndPoint)newUser.socket.RemoteEndPoint;
+
+
             serverText = serverText + "\n"+ "Connected with " + clientep.Address.ToString() + " at port " + clientep.Port.ToString();
 
             //TO DO 5
@@ -96,7 +108,6 @@ public class ServerTCP : MonoBehaviour
 
         while (true)
         {
-            //data = new byte[1024];
             recv = user.socket.Receive(data);
 
             if (recv == 0)
@@ -119,7 +130,13 @@ public class ServerTCP : MonoBehaviour
     //Just call the socket's send function and encode the string.
     void Send(User user)
     {
-        byte[] data = Encoding.ASCII.GetBytes("PING");
+        byte[] data = Encoding.ASCII.GetBytes($"Server {serverName} received message");
         user.socket.Send(data);
+    }
+
+    private void OnApplicationQuit()
+    {
+        socket?.Close();
+        Debug.Log($"Server {serverName} closed");
     }
 }

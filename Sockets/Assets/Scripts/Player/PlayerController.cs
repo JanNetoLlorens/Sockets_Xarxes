@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     public int movSpeed = 100;
     public GameObject udpConsole;
     public GameObject tcpConsole;
+    public GameObject tcpWaitingRoom;
 
     Animator animator;
 

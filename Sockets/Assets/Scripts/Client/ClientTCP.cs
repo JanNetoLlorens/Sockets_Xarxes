@@ -4,6 +4,7 @@ using System.Text;
 using UnityEngine;
 using System.Threading;
 using TMPro;
+using static ServerTCP;
 
 public class ClientTCP : MonoBehaviour
 {
@@ -40,7 +41,7 @@ public class ClientTCP : MonoBehaviour
         //When calling connect and succeeding, our server socket will create a
         //connection between this endpoint and the server's endpoint
 
-        IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.55"), 9050);
+        IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
         server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         server.Connect(ipep);
 
@@ -71,9 +72,22 @@ public class ClientTCP : MonoBehaviour
     {
         byte[] data = new byte[1024];
         int recv = 0;
-        recv = server.Receive(data);
 
-        clientText = clientText += "\n" + Encoding.ASCII.GetString(data, 0, recv);
+        while (true)
+        {
+            recv = server.Receive(data);
+
+            if (recv == 0)
+                break;
+            else
+            {
+                clientText = clientText += "\n" + Encoding.ASCII.GetString(data, 0, recv);
+            }
+        }
     }
 
+    private void OnApplicationQuit()
+    {
+        server?.Close();
+    }
 }

@@ -7,6 +7,7 @@ public class PlayerControllerClient : MonoBehaviour
     public int movSpeed = 100;
     public GameObject consoleUDP;
     public GameObject consoleTCP;
+    public GameObject waitingRoomTcp;
 
     Animator animator;
 
