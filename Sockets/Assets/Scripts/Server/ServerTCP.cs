@@ -27,7 +27,7 @@ public class ServerTCP : MonoBehaviour
     List<User> userList;
     User testSubject;
 
-    public struct User
+    public class User
     {
         public string name;
         public Socket socket;
@@ -93,8 +93,10 @@ public class ServerTCP : MonoBehaviour
 
                 userList.Add(newUser);
 
-                Thread answerOnConnect = new Thread(() => SendOnConnection(newUser, newConnectionText));
-                answerOnConnect.Start();
+                BroadcastMessage(newConnectionText, null);
+
+                //Thread answerOnConnect = new Thread(() => SendOnConnection(newUser, newConnectionText));
+                //answerOnConnect.Start();
 
                 Thread newConnection = new Thread(() => Receive(newUser));
                 newConnection.Start();
@@ -127,7 +129,12 @@ public class ServerTCP : MonoBehaviour
                 }
                 else
                 {
-                    serverText = serverText + "\n" + $"{user.name}: " + Encoding.ASCII.GetString(data, 0, recv);
+                    string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
+                    string fullMessage = $"{user.name}: {receivedMessage}";
+                    serverText += "\n" + fullMessage;
+                    //serverText = serverText + "\n" + $"{user.name}: " + Encoding.ASCII.GetString(data, 0, recv);
+
+                    BroadcastMessage(fullMessage, user);
                 }
                 
             }
@@ -137,8 +144,13 @@ public class ServerTCP : MonoBehaviour
                 break;
             }
 
-            Thread answerOnReceive = new Thread(() => SendOnReceive(user, Encoding.ASCII.GetString(data)));
-            answerOnReceive.Start();
+            //lock (userList)
+            //{
+            //    userList.Remove(user);
+            //}
+
+            //Thread answerOnReceive = new Thread(() => SendOnReceive(user, Encoding.ASCII.GetString(data)));
+            //answerOnReceive.Start();
         }
     }
 
@@ -149,7 +161,7 @@ public class ServerTCP : MonoBehaviour
             byte[] data = Encoding.ASCII.GetBytes(message);
             for (int i = 0; i < userList.Count; i++)
             {
-                user.socket.Send(data);
+                userList[i].socket.Send(data);
             }
         }
         catch(SocketException e)
@@ -162,10 +174,10 @@ public class ServerTCP : MonoBehaviour
     {
         try
         {
-            byte[] data = Encoding.ASCII.GetBytes(message);
+            byte[] data = Encoding.ASCII.GetBytes(user.name + ": " + message);
             for (int i = 0; i < userList.Count; i++)
             {
-                if (user.name != userList[i].name) { user.socket.Send(data); }
+                if (user.name != userList[i].name) { userList[i].socket.Send(data); }
             }
         }
         catch (SocketException e)
@@ -174,22 +186,48 @@ public class ServerTCP : MonoBehaviour
         }
     }
 
-    public void SendText()
+    void BroadcastMessage(string message, User sender)
     {
-        try
-        {
-            serverText += "\n" + $"{hostName.text}: " + chatText.text;
+        byte[] data = Encoding.ASCII.GetBytes(message);
 
-            for (int i = 0; i < userList.Count; i++ )
+        lock (userList)
+        {
+            foreach (User user in userList)
             {
-                userList[i].socket.Send(Encoding.ASCII.GetBytes($"{hostName.text}: " + chatText.text));
-                //testSubject.socket.Send(Encoding.ASCII.GetBytes(chatText.text));
+                if (sender == null || user.name != sender.name) // Do not send back to the sender if provided
+                {
+                    try
+                    {
+                        user.socket.Send(data);
+                    }
+                    catch (SocketException e)
+                    {
+                        Debug.LogException(e);
+                    }
+                }
             }
         }
-        catch (SocketException e)
-        {
-            Debug.LogException(e);
-        }
+    }
+
+    public void SendText()
+    {
+        //try
+        //{
+        //    serverText += "\n" + $"{hostName.text}: " + chatText.text;
+        //
+        //    for (int i = 0; i < userList.Count; i++ )
+        //    {
+        //        userList[i].socket.Send(Encoding.ASCII.GetBytes($"{hostName.text}: " + chatText.text));
+        //        //testSubject.socket.Send(Encoding.ASCII.GetBytes(chatText.text));
+        //    }
+        //}
+        //catch (SocketException e)
+        //{
+        //    Debug.LogException(e);
+        //}
+        string message = $"{hostName.text}: {chatText.text}";
+        serverText += "\n" + message;
+        BroadcastMessage(message, null);
     }
 
     private void OnApplicationQuit()

@@ -116,6 +116,7 @@ public class ClientTCP : MonoBehaviour
             catch (SocketException e)
             {
                 Debug.LogException(e);
+                break;
             }
         }
     }
