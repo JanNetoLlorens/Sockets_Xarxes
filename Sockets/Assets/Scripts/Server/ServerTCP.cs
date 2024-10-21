@@ -14,15 +14,12 @@ public class ServerTCP : MonoBehaviour
     Thread mainThread = null;
 
 
-    //string serverName = "DefaultServerName";
     public GameObject UItextObj;
     TextMeshProUGUI UItext;
     public TMP_InputField chatText;
     public TMP_InputField serverName;
     public TMP_InputField hostName;
     string serverText;
-
-    //string hostName = "DefaultHostName";
 
     List<User> userList;
     User testSubject;
@@ -95,9 +92,6 @@ public class ServerTCP : MonoBehaviour
 
                 BroadcastMessage(newConnectionText, null);
 
-                //Thread answerOnConnect = new Thread(() => SendOnConnection(newUser, newConnectionText));
-                //answerOnConnect.Start();
-
                 Thread newConnection = new Thread(() => Receive(newUser));
                 newConnection.Start();
             }
@@ -132,8 +126,7 @@ public class ServerTCP : MonoBehaviour
                     string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
                     string fullMessage = $"{user.name}: {receivedMessage}";
                     serverText += "\n" + fullMessage;
-                    //serverText = serverText + "\n" + $"{user.name}: " + Encoding.ASCII.GetString(data, 0, recv);
-
+                    
                     BroadcastMessage(fullMessage, user);
                 }
                 
@@ -144,13 +137,6 @@ public class ServerTCP : MonoBehaviour
                 break;
             }
 
-            //lock (userList)
-            //{
-            //    userList.Remove(user);
-            //}
-
-            //Thread answerOnReceive = new Thread(() => SendOnReceive(user, Encoding.ASCII.GetString(data)));
-            //answerOnReceive.Start();
         }
     }
 
@@ -194,7 +180,7 @@ public class ServerTCP : MonoBehaviour
         {
             foreach (User user in userList)
             {
-                if (sender == null || user.name != sender.name) // Do not send back to the sender if provided
+                if (sender == null || user.name != sender.name)
                 {
                     try
                     {
@@ -211,20 +197,6 @@ public class ServerTCP : MonoBehaviour
 
     public void SendText()
     {
-        //try
-        //{
-        //    serverText += "\n" + $"{hostName.text}: " + chatText.text;
-        //
-        //    for (int i = 0; i < userList.Count; i++ )
-        //    {
-        //        userList[i].socket.Send(Encoding.ASCII.GetBytes($"{hostName.text}: " + chatText.text));
-        //        //testSubject.socket.Send(Encoding.ASCII.GetBytes(chatText.text));
-        //    }
-        //}
-        //catch (SocketException e)
-        //{
-        //    Debug.LogException(e);
-        //}
         string message = $"{hostName.text}: {chatText.text}";
         serverText += "\n" + message;
         BroadcastMessage(message, null);
