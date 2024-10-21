@@ -14,20 +14,20 @@ public class ClientTCP : MonoBehaviour
     string clientText;
     Socket server;
 
-    string clientName;
+    public TMP_InputField chatText;
+    public TMP_InputField serverIP;
+    public TMP_InputField clientName;
 
     // Start is called before the first frame update
     void Start()
     {
         UItext = UItextObj.GetComponent<TextMeshProUGUI>();
-
     }
 
     // Update is called once per frame
     void Update()
     {
         UItext.text = clientText;
-
     }
 
     public void StartClient()
@@ -46,7 +46,16 @@ public class ClientTCP : MonoBehaviour
 
         IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
         server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        server.Connect(ipep);
+
+        try
+        {
+            server.Connect(ipep);
+        }
+        catch//(SocketException e)
+        {
+            //clientText += "\n" + $"Failed Connection with server {e.Message}";
+            //Debug.LogException(e);
+        }
 
         //TO DO 4
         //With an established connection, we want to send a message so the server aacknowledges us
@@ -65,8 +74,15 @@ public class ClientTCP : MonoBehaviour
         //TO DO 4
         //Using the socket that stores the connection between the 2 endpoints, call the TCP send function with
         //an encoded message
-        byte[] data = Encoding.ASCII.GetBytes("Pentakill enemiga --> DEFEAT");
-        server.Send(data);
+        server.Send(Encoding.ASCII.GetBytes(clientName.text));
+    }
+
+    public void SendText()
+    {
+        clientText += "\n" + chatText.text;
+
+        server.Send(Encoding.ASCII.GetBytes(chatText.text));
+        
     }
 
     //TO DO 7

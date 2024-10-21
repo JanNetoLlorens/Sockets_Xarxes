@@ -74,7 +74,7 @@ public class ServerTCP : MonoBehaviour
         while(true)
         {
             User newUser = new User();
-            newUser.name = "";
+            newUser.name = "DefaultName";
             //TO DO 3
             //TCP makes it so easy to manage conections, so we are going
             //to put it to use
@@ -85,14 +85,25 @@ public class ServerTCP : MonoBehaviour
             //If you want to check their ports and adresses, you can acces
             //the socket's RemoteEndpoint and LocalEndPoint
             //try printing them on the console
-
-            newUser.socket = socket.Accept();//accept the socket
+            try
+            {
+                newUser.socket = socket.Accept();//accept the socket
+            }
+            catch //(SocketException e) 
+            {
+                //serverText = "\n" + $"failed connection Exception {e.Message}";
+                //Debug.LogException(e);
+            }
 
             IPEndPoint clientep = (IPEndPoint)newUser.socket.RemoteEndPoint;
 
+            //byte[] nameData = new byte[1024];
+            //int nameRecv = newUser.socket.Receive(nameData);
+            //newUser.name = Encoding.ASCII.GetString(nameData);
 
-            serverText = serverText + "\n"+ "Connected with " + clientep.Address.ToString() + " at port " + clientep.Port.ToString();
+            serverText = "\n"+ $"{newUser.name} joined lobby  |  IP Adress " + clientep.Address.ToString() + " at port " + clientep.Port.ToString();
 
+            userList.Add(newUser);
             //TO DO 5
             //For every client, we call a new thread to receive their messages. 
             //Here we have to send our user as a parameter so we can use it's socket.
@@ -144,9 +155,10 @@ public class ServerTCP : MonoBehaviour
     public void SendText()
     {
         serverText += "\n" + chatText.text;
-        while (true) 
+        
+        for (int i = 0; i < userList.Count; i++ )
         {
-            break;
+            userList[i].socket.Send(Encoding.ASCII.GetBytes(chatText.text));
         }
     }
 
