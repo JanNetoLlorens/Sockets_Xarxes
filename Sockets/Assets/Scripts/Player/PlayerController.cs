@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     public GameObject udpConsole;
     public GameObject tcpConsole;
     public GameObject tcpWaitingRoom;
+    public TMP_InputField chatBox;
 
     Animator animator;
 
@@ -61,12 +62,12 @@ public class PlayerController : MonoBehaviour
         }
         else { animator.SetBool("isWalking", false); }
 
-        if (newarCPU && Input.GetKeyDown(KeyCode.U))
+        if (newarCPU && Input.GetKeyDown(KeyCode.U) && !chatBox.isFocused)
         {
             udpConsole.SetActive(!udpConsole.activeSelf);
 
         }
-        if (newarCPU && Input.GetKeyDown(KeyCode.T))
+        if (newarCPU && Input.GetKeyDown(KeyCode.T) && !chatBox.isFocused)
         {
             tcpConsole.SetActive(!tcpConsole.activeSelf);
 

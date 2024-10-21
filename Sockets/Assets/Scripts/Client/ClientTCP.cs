@@ -28,6 +28,8 @@ public class ClientTCP : MonoBehaviour
     void Update()
     {
         UItext.text = clientText;
+        //if(server == null) { Debug.LogError(" server was null"); }
+        //if(!server.Connected) { Debug.LogError(" server not connected"); }
     }
 
     public void StartClient()
@@ -37,56 +39,59 @@ public class ClientTCP : MonoBehaviour
     }
     void Connect()
     {
-        //TO DO 2
-        //Create the server endpoint so we can try to connect to it.
-        //You'll need the server's IP and the port we binded it to before
-        //Also, initialize our server socket.
-        //When calling connect and succeeding, our server socket will create a
-        //connection between this endpoint and the server's endpoint
-
-        IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
-        server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
         try
         {
+            IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(serverIP.text), 9051);
+            server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             server.Connect(ipep);
         }
-        catch//(SocketException e)
+        catch(SocketException e)
         {
-            //clientText += "\n" + $"Failed Connection with server {e.Message}";
-            //Debug.LogException(e);
+            clientText += "\n" + $"Failed Connection with server {e}";
+            Debug.LogException(e);
         }
 
-        //TO DO 4
-        //With an established connection, we want to send a message so the server aacknowledges us
-        //Start the Send Thread
         Thread sendThread = new Thread(Send);
         sendThread.Start();
 
-        //TO DO 7
-        //If the client wants to receive messages, it will have to start another thread. Call Receive()
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
 
     }
     void Send()
     {
-        //TO DO 4
-        //Using the socket that stores the connection between the 2 endpoints, call the TCP send function with
-        //an encoded message
-        server.Send(Encoding.ASCII.GetBytes(clientName.text));
+        try
+        {
+            server.Send(Encoding.ASCII.GetBytes(clientName.text));
+        }
+        catch (SocketException e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     public void SendText()
     {
-        clientText += "\n" + chatText.text;
-
-        server.Send(Encoding.ASCII.GetBytes(chatText.text));
+        if (server != null && server.Connected) 
+        { 
+            try
+            {
+                clientText += "\n" + $"{clientName.text}: " + chatText.text;
+                server.Send(Encoding.ASCII.GetBytes(chatText.text));
+            }
+            catch(SocketException e)
+            {
+                Debug.LogException(e);
+            }
+        }
+        else
+        {
+            clientText += "\n Server is not connected.";
+        }
         
     }
 
-    //TO DO 7
-    //Similar to what we already did with the server, we have to call the Receive() method from the socket.
+    
     void Receive()
     {
         byte[] data = new byte[1024];
@@ -94,19 +99,29 @@ public class ClientTCP : MonoBehaviour
 
         while (true)
         {
-            recv = server.Receive(data);
-
-            if (recv == 0)
-                break;
-            else
+            try
             {
-                clientText = clientText += "\n" + Encoding.ASCII.GetString(data, 0, recv);
+                recv = server.Receive(data);
+
+                if (recv == 0)
+                {
+                    Debug.Log("recv = 0");
+                    break;
+                }
+                else
+                {
+                    clientText += "\n" + Encoding.ASCII.GetString(data, 0, recv);
+                }
+            }
+            catch (SocketException e)
+            {
+                Debug.LogException(e);
             }
         }
     }
 
     private void OnApplicationQuit()
     {
-        server?.Close();
+        //server?.Close();
     }
 }

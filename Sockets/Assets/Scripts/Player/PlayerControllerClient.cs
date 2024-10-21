@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlayerControllerClient : MonoBehaviour
@@ -8,6 +9,7 @@ public class PlayerControllerClient : MonoBehaviour
     public GameObject consoleUDP;
     public GameObject consoleTCP;
     public GameObject waitingRoomTcp;
+    public TMP_InputField chatBox;
 
     Animator animator;
 
@@ -24,24 +26,24 @@ public class PlayerControllerClient : MonoBehaviour
     void Update()
     {
         Vector3 speed = new Vector3(0, 0, 0);
-        if (Input.GetKey("d"))
+        if (Input.GetKey("d") && !chatBox.isFocused)
         {
             // speed += Vector3.Cross(new Vector3(1, 0, 0), this.transform.forward) * movSpeed;
             speed += new Vector3(1, 0, 0) * movSpeed;
         }
-        if (Input.GetKey("a"))
+        if (Input.GetKey("a") && !chatBox.isFocused)
         {
             //speed += Vector3.Cross(new Vector3(-1, 0, 0), this.transform.forward) * movSpeed;
             speed += new Vector3(-1, 0, 0) * movSpeed;
 
         }
-        if (Input.GetKey("w"))
+        if (Input.GetKey("w") && !chatBox.isFocused)
         {
            // speed += Vector3.Cross(new Vector3(0, 0, 1), this.transform.forward) * movSpeed;
             speed += new Vector3(0, 0, 1) * movSpeed;
 
         }
-        if (Input.GetKey("s"))
+        if (Input.GetKey("s") && !chatBox.isFocused)
         {
             //speed += Vector3.Cross(new Vector3(0, 0, -1), this.transform.forward) * movSpeed;
             speed += new Vector3(0, 0, -1) * movSpeed;
@@ -57,12 +59,12 @@ public class PlayerControllerClient : MonoBehaviour
         }
         else { animator.SetBool("isWalking", false); }
 
-        if (nearUDP && Input.GetKeyDown("e"))
+        if (nearUDP && Input.GetKeyDown("e") && !chatBox.isFocused)
         {
             consoleUDP.SetActive(!consoleUDP.activeSelf);
 
         }
-        if (nearTCP && Input.GetKeyDown("e"))
+        if (nearTCP && Input.GetKeyDown("e") && !chatBox.isFocused)
         {
             consoleTCP.SetActive(!consoleTCP.activeSelf);
 

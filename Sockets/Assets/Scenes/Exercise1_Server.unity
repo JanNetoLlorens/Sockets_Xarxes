@@ -775,6 +775,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -2981935935721440718, guid: 70e807b61e24f4143ab8d3b8b3f322ed, type: 3}
+      propertyPath: chatBox
+      value: 
+      objectReference: {fileID: 960203727}
+    - target: {fileID: -2981935935721440718, guid: 70e807b61e24f4143ab8d3b8b3f322ed, type: 3}
       propertyPath: movSpeed
       value: 3
       objectReference: {fileID: 0}
@@ -7716,6 +7720,7 @@ RectTransform:
   m_Children:
   - {fileID: 660992404}
   - {fileID: 1321083799}
+  - {fileID: 960203726}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -7959,7 +7964,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1776644844}
-  m_Father: {fileID: 1321083799}
+  m_Father: {fileID: 935592400}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -11973,7 +11978,6 @@ RectTransform:
   - {fileID: 2082564076}
   - {fileID: 238016070}
   - {fileID: 706875724}
-  - {fileID: 960203726}
   - {fileID: 1131039550}
   - {fileID: 2579081}
   - {fileID: 1654671115}

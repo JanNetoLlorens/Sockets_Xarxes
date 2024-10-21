@@ -6,6 +6,7 @@ using TMPro;
 using System.Text;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using static ServerTCP;
 
 public class ServerTCP : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class ServerTCP : MonoBehaviour
     //string hostName = "DefaultHostName";
 
     List<User> userList;
+    User testSubject;
 
     public struct User
     {
@@ -54,17 +56,18 @@ public class ServerTCP : MonoBehaviour
 
         serverText = $"{hostName.text} hosted TCP Server {serverName.text}...";
 
-        //TO DO 1
-        //Create and bind the socket
-        //Any IP that wants to connect to the port 9050 with TCP, will communicate with this socket
-        //Don't forget to set the socket in listening mode
-        IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 9050);
-        socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        socket.Bind(localEndPoint);
-        socket.Listen(10);
+        try
+        {
+            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 9051);
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            socket.Bind(localEndPoint);
+            socket.Listen(10);
+        }
+        catch(SocketException e) 
+        {
+            Debug.LogException(e);
+        }
 
-        //TO DO 3
-        //TIme to check for connections, start a thread using CheckNewConnections
         mainThread = new Thread(CheckNewConnections);
         mainThread.Start();
     }
@@ -75,96 +78,123 @@ public class ServerTCP : MonoBehaviour
         {
             User newUser = new User();
             newUser.name = "DefaultName";
-            //TO DO 3
-            //TCP makes it so easy to manage conections, so we are going
-            //to put it to use
-            //Accept any incoming clients and store them in this user.
-            //When accepting, we can now store a copy of our server socket
-            //who has established a communication between a
-            //local endpoint (server) and the remote endpoint(client)
-            //If you want to check their ports and adresses, you can acces
-            //the socket's RemoteEndpoint and LocalEndPoint
-            //try printing them on the console
+
             try
             {
                 newUser.socket = socket.Accept();//accept the socket
+                IPEndPoint clientep = (IPEndPoint)newUser.socket.RemoteEndPoint;
+
+                byte[] nameData = new byte[1024];
+                int nameRecv = newUser.socket.Receive(nameData);
+                newUser.name = Encoding.ASCII.GetString(nameData, 0, nameRecv);
+
+                string newConnectionText = $"{newUser.name} joined lobby  |  IP Adress " + clientep.Address.ToString() + " at port " + clientep.Port.ToString();
+                serverText = serverText + "\n" + newConnectionText;
+
+                userList.Add(newUser);
+
+                Thread answerOnConnect = new Thread(() => SendOnConnection(newUser, newConnectionText));
+                answerOnConnect.Start();
+
+                Thread newConnection = new Thread(() => Receive(newUser));
+                newConnection.Start();
             }
-            catch //(SocketException e) 
+            catch (SocketException e) 
             {
-                //serverText = "\n" + $"failed connection Exception {e.Message}";
-                //Debug.LogException(e);
+                serverText = "\n" + $"failed connection Exception {e.Message}";
+                Debug.LogException(e);
             }
-
-            IPEndPoint clientep = (IPEndPoint)newUser.socket.RemoteEndPoint;
-
-            //byte[] nameData = new byte[1024];
-            //int nameRecv = newUser.socket.Receive(nameData);
-            //newUser.name = Encoding.ASCII.GetString(nameData);
-
-            serverText = "\n"+ $"{newUser.name} joined lobby  |  IP Adress " + clientep.Address.ToString() + " at port " + clientep.Port.ToString();
-
-            userList.Add(newUser);
-            //TO DO 5
-            //For every client, we call a new thread to receive their messages. 
-            //Here we have to send our user as a parameter so we can use it's socket.
-            Thread newConnection = new Thread(() => Receive(newUser));
-            newConnection.Start();
         }
-        //This users could be stored in the future on a list
-        //in case you want to manage your connections
 
     }
 
     void Receive(User user)
     {
-        //TO DO 5
-        //Create an infinite loop to start receiving messages for this user
-        //You'll have to use the socket function receive to be able to get them.
+
         byte[] data = new byte[1024];
         int recv = 0;
 
         while (true)
         {
-            recv = user.socket.Receive(data);
-
-            if (recv == 0)
-                break;
-            else
+            try
             {
-                serverText = serverText + "\n" + Encoding.ASCII.GetString(data, 0, recv);
+                recv = user.socket.Receive(data);
+
+                if (recv == 0)
+                {
+                    Debug.Log("recv = 0");
+                    break;
+                }
+                else
+                {
+                    serverText = serverText + "\n" + $"{user.name}: " + Encoding.ASCII.GetString(data, 0, recv);
+                }
+                
+            }
+            catch (SocketException e)
+            {
+                Debug.LogException(e);
+                break;
             }
 
-            //TO DO 6
-            //We'll send a ping back every time a message is received
-            //Start another thread to send a message, same parameters as this one.
-            Thread answer = new Thread(() => Send(user));
-            answer.Start();
+            Thread answerOnReceive = new Thread(() => SendOnReceive(user, Encoding.ASCII.GetString(data)));
+            answerOnReceive.Start();
         }
     }
 
-    //TO DO 6
-    //Now, we'll use this user socket to send a "ping".
-    //Just call the socket's send function and encode the string.
-    void Send(User user)
+    void SendOnConnection(User user, string message)
     {
-        //byte[] data = Encoding.ASCII.GetBytes($"Server {serverName} received message");
-        byte[] data = Encoding.ASCII.GetBytes($"{chatText}");
-        user.socket.Send(data);
+        try
+        {
+            byte[] data = Encoding.ASCII.GetBytes(message);
+            for (int i = 0; i < userList.Count; i++)
+            {
+                user.socket.Send(data);
+            }
+        }
+        catch(SocketException e)
+        {
+            Debug.LogException(e);
+        }
+    }
+
+    void SendOnReceive(User user, string message)
+    {
+        try
+        {
+            byte[] data = Encoding.ASCII.GetBytes(message);
+            for (int i = 0; i < userList.Count; i++)
+            {
+                if (user.name != userList[i].name) { user.socket.Send(data); }
+            }
+        }
+        catch (SocketException e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     public void SendText()
     {
-        serverText += "\n" + chatText.text;
-        
-        for (int i = 0; i < userList.Count; i++ )
+        try
         {
-            userList[i].socket.Send(Encoding.ASCII.GetBytes(chatText.text));
+            serverText += "\n" + $"{hostName.text}: " + chatText.text;
+
+            for (int i = 0; i < userList.Count; i++ )
+            {
+                userList[i].socket.Send(Encoding.ASCII.GetBytes($"{hostName.text}: " + chatText.text));
+                //testSubject.socket.Send(Encoding.ASCII.GetBytes(chatText.text));
+            }
+        }
+        catch (SocketException e)
+        {
+            Debug.LogException(e);
         }
     }
 
     private void OnApplicationQuit()
     {
-        socket?.Close();
-        Debug.Log($"Server {serverName} closed");
+        //socket?.Close();
+        //Debug.Log($"Server {serverName} closed");
     }
 }
