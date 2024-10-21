@@ -4,6 +4,8 @@ using System.Net.Sockets;
 using System.Threading;
 using TMPro;
 using System.Text;
+using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class ServerTCP : MonoBehaviour
 {
@@ -11,12 +13,17 @@ public class ServerTCP : MonoBehaviour
     Thread mainThread = null;
 
 
-    string serverName = "Demacia";
+    //string serverName = "DefaultServerName";
     public GameObject UItextObj;
     TextMeshProUGUI UItext;
-    public TextMeshProUGUI UItextChat;
-    public TextMeshPro UItextChatInput;
+    public TMP_InputField chatText;
+    public TMP_InputField serverName;
+    public TMP_InputField hostName;
     string serverText;
+
+    //string hostName = "DefaultHostName";
+
+    List<User> userList;
 
     public struct User
     {
@@ -27,8 +34,7 @@ public class ServerTCP : MonoBehaviour
     void Start()
     {
         UItext = UItextObj.GetComponent<TextMeshProUGUI>();
-        UItextChat = UItextObj.GetComponent <TextMeshProUGUI>();
-
+        userList = new List<User>();
     }
 
 
@@ -46,7 +52,7 @@ public class ServerTCP : MonoBehaviour
     public void startServer()
     {
 
-        serverText = $"Starting TCP Server {serverName}...";
+        serverText = $"{hostName.text} hosted TCP Server {serverName.text}...";
 
         //TO DO 1
         //Create and bind the socket
@@ -130,8 +136,18 @@ public class ServerTCP : MonoBehaviour
     //Just call the socket's send function and encode the string.
     void Send(User user)
     {
-        byte[] data = Encoding.ASCII.GetBytes($"Server {serverName} received message");
+        //byte[] data = Encoding.ASCII.GetBytes($"Server {serverName} received message");
+        byte[] data = Encoding.ASCII.GetBytes($"{chatText}");
         user.socket.Send(data);
+    }
+
+    public void SendText()
+    {
+        serverText += "\n" + chatText.text;
+        while (true) 
+        {
+            break;
+        }
     }
 
     private void OnApplicationQuit()

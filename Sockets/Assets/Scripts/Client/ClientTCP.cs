@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Threading;
 using TMPro;
 using static ServerTCP;
+using UnityEngine.UI;
 
 public class ClientTCP : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class ClientTCP : MonoBehaviour
     TextMeshProUGUI UItext;
     string clientText;
     Socket server;
+
+    string clientName;
 
     // Start is called before the first frame update
     void Start()

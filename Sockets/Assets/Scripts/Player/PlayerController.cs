@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -70,8 +71,6 @@ public class PlayerController : MonoBehaviour
             tcpConsole.SetActive(!tcpConsole.activeSelf);
 
         }
-
-
     }
 
     private void OnTriggerEnter(Collider other)
